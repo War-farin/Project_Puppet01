@@ -8,10 +8,9 @@ package project_puppet01;
  *
  * @author saran
  */
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.Image;
+import javax.swing.*;
 
 public class GamePanel extends JPanel {
 
@@ -50,11 +49,11 @@ public class GamePanel extends JPanel {
         setFocusable(true);
         puppetBox = new PuppetBox();
         backgroundImage = new ImageIcon(
-                getClass().getResource("/image/background.jpg")).getImage();
+                getClass().getResource("/Image/background.jpg")).getImage();
         MenuImage = new ImageIcon(
-                getClass().getResource("/image/login.png")).getImage();
+                getClass().getResource("/Image/login.png")).getImage();
         TitleImage = new ImageIcon(
-                getClass().getResource("/image/loading.png")).getImage();
+                getClass().getResource("/Image/loading.png")).getImage();
         breakTimer = new Timer(5000, e -> {
             Break = false;
             puppetBox.sethold(false);
