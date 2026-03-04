@@ -90,10 +90,6 @@ public class PuzzleController {
         return successCount == requiredSuccess;
     }
 
-    public boolean isRoundComplete() {
-        return failCount == maxFail || successCount == requiredSuccess;
-    }
-
     public boolean isLose() {
         return failCount == maxFail;
     }

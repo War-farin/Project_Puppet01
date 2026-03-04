@@ -28,7 +28,7 @@ public class PuppetBox {
 
     public void increase() {
         if (hold) {
-            puppetValue += 0.5f;
+            puppetValue += 5.0f;
             if (puppetValue > MAX) {
                 puppetValue = MAX;
             }

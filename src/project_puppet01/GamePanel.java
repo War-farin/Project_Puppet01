@@ -16,30 +16,35 @@ import java.awt.Image;
 public class GamePanel extends JPanel {
 
     private enum GameState {
-        MENU, TITLE, PREPARE, PUZZLE, BLACKSCREEN, JUMPSCARE, WINSCREEN, LOSESCREEN, FINALSCREEN
+        OPENGAME, MENU, TITLE, PREPARE, PUZZLE, BLACKSCREEN, BEFOREJUMPSCARE,
+        WHITESCREEN, JUMPSCARE, WINSCREEN, LOSESCREEN, FINALSCREEN
     }
-    private GameState gameState = GameState.MENU;
+    private GameState gameState = GameState.OPENGAME;
     private PuppetBox puppetBox;
     private PuzzleController puzzleController;
 
+    private float fade = 0f;
+    private Timer openTimer;
     private Timer gameTimer;
     private Timer holdTimer;
     private Timer titleTimer;
     private Timer breakTimer;
     private boolean Break = false;
+    private boolean playing = false;
 
     //private float puppetValue = 1;
     //private final float MAX = 100;
     //private boolean press = false;
     //private boolean bugclick = false;
-    private int currentNight = 1;
+    private int currentNight = 3;
     private final int MAX_NIGHT = 3;
     //private final int failHealth = 3;
     //private int failCount = 0;
     //private int successCount = 0;
     //private int requiredSuccess;
 
-    private Image backgroundImage, MenuImage, TitleImage;
+    private Image backgroundImage, MenuImage, TitleImage1, TitleImage2, TitleImage3,
+            Boxopen, Jumpscare, WhiteImage, LoseImage, WinImage, FinalImage, OpenImage;
 
     private Rectangle newGameButton;
     private Rectangle continueButton;
@@ -50,12 +55,40 @@ public class GamePanel extends JPanel {
         setFocusable(true);
         puppetBox = new PuppetBox();
         backgroundImage = new ImageIcon(
-                getClass().getResource("/image/background.jpg")).getImage();
+                getClass().getResource("/Image/display.png")).getImage();
         MenuImage = new ImageIcon(
-                getClass().getResource("/image/login.png")).getImage();
-        TitleImage = new ImageIcon(
-                getClass().getResource("/image/loading.png")).getImage();
-        breakTimer = new Timer(5000, e -> {
+                getClass().getResource("/Image/login3.png")).getImage();
+        TitleImage1 = new ImageIcon(
+                getClass().getResource("/Image/day1.jpg")).getImage();
+        TitleImage2 = new ImageIcon(
+                getClass().getResource("/Image/day2.jpg")).getImage();
+        TitleImage3 = new ImageIcon(
+                getClass().getResource("/Image/day3.jpg")).getImage();
+        Boxopen = new ImageIcon(
+                getClass().getResource("/Image/beforejumpscare.png")).getImage();
+        Jumpscare = new ImageIcon(
+                getClass().getResource("/Image/jumpscare.jpg")).getImage();
+        LoseImage = new ImageIcon(
+                getClass().getResource("/Image/youdied.png")).getImage();
+        WinImage = new ImageIcon(
+                getClass().getResource("/Image/live.png")).getImage();
+        FinalImage = new ImageIcon(
+                getClass().getResource("/Image/win.png")).getImage();
+        WhiteImage = new ImageIcon(
+                getClass().getResource("/Image/White.png")).getImage();
+        OpenImage = new ImageIcon(
+                getClass().getResource("/Image/opengame.png")).getImage();
+        openTimer = new Timer(50, e -> {
+            fade += 0.01f;
+            if (fade >= 1f) {
+                fade = 0f;
+                gameState = GameState.MENU;
+                openTimer.stop();
+            }
+            repaint();
+        });
+        openTimer.start();
+        breakTimer = new Timer(3000, e -> {
             Break = false;
             puppetBox.sethold(false);
             gameState = GameState.PUZZLE;
@@ -65,8 +98,9 @@ public class GamePanel extends JPanel {
         gameTimer = new Timer(100, e -> {
             if (gameState == GameState.PREPARE
                     || gameState == GameState.PUZZLE) {
-                puppetBox.decreaseAlltime();
-
+                if (playing) {
+                    puppetBox.decreaseAlltime();
+                }
                 if (puppetBox.isEmpty()) {
                     Gameover();
                 }
@@ -80,12 +114,14 @@ public class GamePanel extends JPanel {
                     puzzleController.update();
                     puppetBox.sethold(false);
                     if (puzzleController.isWin()) {
+                        playing = false;
                         if (currentNight == MAX_NIGHT) {
-                            gameState = GameState.FINALSCREEN;
+                            Gamesuccess();
                         } else {
                             gameState = GameState.WINSCREEN;
                         }
                     } else if (puzzleController.isLose()) {
+                        playing = false;
                         gameState = GameState.LOSESCREEN;
                     } else {
                         puzzleController.nextPuzzle();
@@ -96,7 +132,7 @@ public class GamePanel extends JPanel {
             repaint();
         });
 
-        titleTimer = new Timer(2000, e -> {
+        titleTimer = new Timer(4000, e -> {
             gameState = GameState.PREPARE;
             ((Timer) e.getSource()).stop();
         });
@@ -116,12 +152,14 @@ public class GamePanel extends JPanel {
                         puppetBox.setValue(50);
                         startNewGame();
                     } else if (continueButton.contains(e.getPoint())) {
+                        Difficulty();
                         gameState = GameState.TITLE;
                         puppetBox.setValue(50);
                         titleTimer.start();
                     }
                 } else if (gameState == GameState.PREPARE) {
                     if (isOnButton(e.getX(), e.getY())) {
+                        playing = true;
                         puppetBox.sethold(true);
                         holdTimer.start();
                     }
@@ -185,6 +223,9 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         switch (gameState) {
+            case OPENGAME:
+                drawOpenGame(g);
+                break;
             case MENU:
                 drawMenu(g);
                 break;
@@ -199,6 +240,12 @@ public class GamePanel extends JPanel {
                 break;
             case BLACKSCREEN:
                 drawBlackScreen(g);
+                break;
+            case WHITESCREEN:
+                drawWhiteScreen(g);
+                break;
+            case BEFOREJUMPSCARE:
+                drawBeforejumpscare(g);
                 break;
             case JUMPSCARE:
                 drawJumpScare(g);
@@ -216,12 +263,18 @@ public class GamePanel extends JPanel {
     }
 
     private boolean isOnButton(int x, int y) {
-        Rectangle button = new Rectangle(330, 300, 140, 50);
+        Rectangle button = new Rectangle(336, 192, 116, 116);
         return button.contains(x, y);
     }
 
     public void drawPrepare(Graphics g) {
         g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        //show puppetbutton
+        /*int buttonWidth = 116;
+        int buttonHeight = 116;
+        int X = 336;
+        int Y = 192;
+        g.fillRect(X, Y, buttonWidth, buttonHeight);*/
 
         int barWidth = 550;
         int barHeight = 20;
@@ -241,44 +294,48 @@ public class GamePanel extends JPanel {
 
     public void drawMenu(Graphics g) {
         g.drawImage(MenuImage, 0, 0, getWidth(), getHeight(), this);
-        int buttonWidth = 200;
-        int buttonHeight = 50;
-        int X = getWidth() / 2 - buttonWidth / 2;
-        int newGameY = 420;
-        int continueY = 490;
+        int buttonWidth = 120;
+        int buttonHeight = 64;
+        int X = 340;
+        int newGameY = 374;
+        int continueY = 454;
         newGameButton = new Rectangle(X, newGameY, buttonWidth, buttonHeight);
         continueButton = new Rectangle(X, continueY, buttonWidth, buttonHeight);
-        g.setColor(Color.WHITE);
+        /*g.setColor(Color.WHITE);
         g.fillRect(newGameButton.x, newGameButton.y, buttonWidth, buttonHeight);
-        g.fillRect(continueButton.x, continueButton.y, buttonWidth, buttonHeight);
-        g.setColor(Color.BLACK);
-        g.drawString("NEW GAME", X + 50, newGameY + 30);
-        g.drawString("CONTINUE", X + 50, continueY + 30);
+        g.fillRect(continueButton.x, continueButton.y, buttonWidth, buttonHeight);*/
     }
 
     private void drawTitle(Graphics g) {
-        g.drawImage(TitleImage, 0, 0, getWidth(), getHeight(), this);
+        if (currentNight == 1) {
+            g.drawImage(TitleImage1, 0, 0, getWidth(), getHeight(), this);
+        } else if (currentNight == 2) {
+            g.drawImage(TitleImage2, 0, 0, getWidth(), getHeight(), this);
+        } else if (currentNight == 3) {
+            g.drawImage(TitleImage3, 0, 0, getWidth(), getHeight(), this);
+        }
+    }
+
+    private void drawOpenGame(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-
-        String text = "NIGHT " + currentNight;
-
-        Font font = new Font("Arial", Font.BOLD, 80);
-        g2.setFont(font);
-
-        FontMetrics fm = g2.getFontMetrics();
-        int textWidth = fm.stringWidth(text);
-        int textHeight = fm.getHeight();
-
-        int x = (getWidth() - textWidth) / 2;
-        int y = (getHeight() - textHeight) / 2 + fm.getAscent();
-
-        g2.setColor(Color.WHITE);
-        g2.drawString(text, x, y);
+        g2.drawImage(OpenImage, 0, 0, getWidth(), getHeight(), this);
+        g2.setComposite(AlphaComposite.getInstance(
+                AlphaComposite.SRC_OVER, fade));
+        g2.setColor(Color.BLACK);
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.setComposite(AlphaComposite.getInstance(
+                AlphaComposite.SRC_OVER, 1f));
     }
 
     private void drawBlackScreen(Graphics g) {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
+    }
+
+    private void drawWhiteScreen(Graphics g) {
+        g.drawImage(WhiteImage, 0, 0, getWidth(), getHeight(), this);
+        /*g.setColor(Color.WHITE);
+        g.fillRect(0, 0, getWidth(), getHeight());*/
     }
 
     private void drawPuzzle(Graphics g) {
@@ -287,83 +344,86 @@ public class GamePanel extends JPanel {
         }
     }
 
+    private void drawBeforejumpscare(Graphics g) {
+        g.drawImage(Boxopen, 0, 0, getWidth(), getHeight(), this);
+    }
+
     private void drawJumpScare(Graphics g) {
-        g.setColor(Color.RED);
-        g.fillRect(0, 0, getWidth(), getHeight());
-        g.setColor(Color.WHITE);
-        g.drawString("JUMPSCARE!", getWidth() / 2 - 40, getHeight() / 2);
+        g.drawImage(Jumpscare, 0, 0, getWidth(), getHeight(), this);
     }
 
     private void drawWinScreen(Graphics g) {
-        g.setColor(Color.GREEN);
-        g.fillRect(0, 0, getWidth(), getHeight());
-        g.setColor(Color.BLACK);
-        g.drawString("YOU LIVE", getWidth() / 2 - 30, getHeight() / 2);
-        int buttonWidth = 200;
-        int buttonHeight = 50;
-        int X = getWidth() / 2 - buttonWidth / 2;
-        int nextY = 420;
-        int menuY = 490;
-        nextButton = new Rectangle(X, nextY, buttonWidth, buttonHeight);
-        menuButton = new Rectangle(X, menuY, buttonWidth, buttonHeight);
-        g.setColor(Color.WHITE);
+        g.drawImage(WinImage, 0, 0, getWidth(), getHeight(), this);
+        int buttonWidth = 168;
+        int buttonHeight = 96;
+        int nextX = 163;
+        int menuX = 463;
+        int Y = 423;
+        nextButton = new Rectangle(nextX + 2, Y, buttonWidth, buttonHeight);
+        menuButton = new Rectangle(menuX, Y, buttonWidth, buttonHeight);
+        /*g.setColor(Color.WHITE);
         g.fillRect(nextButton.x, nextButton.y, buttonWidth, buttonHeight);
-        g.fillRect(menuButton.x, menuButton.y, buttonWidth, buttonHeight);
-        g.setColor(Color.BLACK);
-        g.drawString("NEXT", X + 50, nextY + 30);
-        g.drawString("MENU", X + 50, menuY + 30);
+        g.fillRect(menuButton.x, menuButton.y, buttonWidth, buttonHeight); */
     }
 
     private void drawLoseScreen(Graphics g) {
-        g.setColor(Color.DARK_GRAY);
-        g.fillRect(0, 0, getWidth(), getHeight());
-        g.setColor(Color.WHITE);
-        g.drawString("YOU DIED", getWidth() / 2 - 40, getHeight() / 2);
-        int buttonWidth = 200;
-        int buttonHeight = 50;
-        int X = getWidth() / 2 - buttonWidth / 2;
-        int menuY = 490;
+        g.drawImage(LoseImage, 0, 0, getWidth(), getHeight(), this);
+        int buttonWidth = 170;
+        int buttonHeight = 94;
+        int X = 322;
+        int menuY = 408;
         menuButton = new Rectangle(X, menuY, buttonWidth, buttonHeight);
-        g.setColor(Color.WHITE);
+        /*g.setColor(Color.WHITE);
         g.fillRect(menuButton.x, menuButton.y, buttonWidth, buttonHeight);
-        g.setColor(Color.BLACK);
-        g.drawString("MENU", X + 50, menuY + 30);
+        g.setColor(Color.BLACK);*/
     }
 
     private void drawFinalScreen(Graphics g) {
-        g.setColor(Color.YELLOW);
-        g.fillRect(0, 0, getWidth(), getHeight());
-
-        g.setColor(Color.BLACK);
-        g.drawString("YOU SURVIVE", getWidth() / 2 - 80, getHeight() / 2);
-        int buttonWidth = 200;
-        int buttonHeight = 50;
-        int X = getWidth() / 2 - buttonWidth / 2;
-        int menuY = 490;
+        g.drawImage(FinalImage, 0, 0, getWidth(), getHeight(), this);
+        int buttonWidth = 170;
+        int buttonHeight = 94;
+        int X = 327;
+        int menuY = 416;
         menuButton = new Rectangle(X, menuY, buttonWidth, buttonHeight);
-        g.setColor(Color.WHITE);
-        g.fillRect(menuButton.x, menuButton.y, buttonWidth, buttonHeight);
-        g.setColor(Color.BLACK);
-        g.drawString("MENU", X + 50, menuY + 30);
-
+        /* g.setColor(Color.WHITE);
+        g.fillRect(menuButton.x, menuButton.y, buttonWidth, buttonHeight);*/
     }
 
     private void Gameover() {
         gameState = GameState.BLACKSCREEN;
         repaint();
-        Timer blackTimer = new Timer(5000, null);
+        Timer blackTimer = new Timer(4000, null);
         blackTimer.setRepeats(false);
-        blackTimer.addActionListener(e -> {
-            gameState = GameState.JUMPSCARE;
+        blackTimer.addActionListener(B -> {
+            gameState = GameState.BEFOREJUMPSCARE;
             repaint();
-            Timer jumpTimer = new Timer(3000, null);
-            jumpTimer.setRepeats(false);
-            jumpTimer.addActionListener(ev -> {
-                gameState = GameState.LOSESCREEN;
+            Timer beforeTimer = new Timer(5000, null);
+            beforeTimer.setRepeats(false);
+            beforeTimer.addActionListener(bef -> {
+                gameState = GameState.JUMPSCARE;
                 repaint();
+                Timer jumpTimer = new Timer(5000, null);
+                jumpTimer.setRepeats(false);
+                jumpTimer.addActionListener(J -> {
+                    gameState = GameState.LOSESCREEN;
+                    repaint();
+                });
+                jumpTimer.start();
             });
-            jumpTimer.start();
+            beforeTimer.start();
         });
         blackTimer.start();
+    }
+
+    private void Gamesuccess() {
+        gameState = GameState.WHITESCREEN;
+        repaint();
+        Timer WhiteTimer = new Timer(4000, null);
+        WhiteTimer.setRepeats(false);
+        WhiteTimer.addActionListener(W -> {
+            gameState = GameState.FINALSCREEN;
+            repaint();
+        });
+        WhiteTimer.start();
     }
 }
