@@ -8,7 +8,6 @@ package project_puppet01;
  *
  * @author saran
  */
-import java.awt.*;
 
 public class PuppetBox {
 
@@ -18,7 +17,7 @@ public class PuppetBox {
 
     public void decreaseAlltime() {
         if (!hold) {
-            puppetValue -= 5;//0.25f;
+            puppetValue -= 0.25f;
         }
 
         if (puppetValue < 0) {
@@ -28,11 +27,15 @@ public class PuppetBox {
 
     public void increase() {
         if (hold) {
-            puppetValue += 5.0f;
+            puppetValue += 0.75f;
             if (puppetValue > MAX) {
                 puppetValue = MAX;
             }
         }
+    }
+
+    public void decrease(float value) {
+        puppetValue -= value;
     }
 
     public boolean isFull() {

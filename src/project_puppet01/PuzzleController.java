@@ -16,6 +16,7 @@ public class PuzzleController {
     private ArrayList<Puzzle> puzzles = new ArrayList<>();
     private Puzzle currentPuzzle;
 
+    private int puzzleIndex = 0;
     private int successCount = 0;
     private int failCount = 0;
     private int requiredSuccess;
@@ -38,9 +39,14 @@ public class PuzzleController {
     }
 
     private void RandomPuzzle() {
-        Random r = new Random();
-        currentPuzzle = puzzles.get(r.nextInt(puzzles.size()));
+    if (puzzleIndex >= puzzles.size()) {
+        Collections.shuffle(puzzles);
+        puzzleIndex = 0;
     }
+
+    currentPuzzle = puzzles.get(puzzleIndex);
+    puzzleIndex++;
+}
 
     public void update() {
         if (currentPuzzle == null) {
@@ -67,11 +73,15 @@ public class PuzzleController {
         }
 
         if (currentPuzzle.isFailed()) {
-            failCount++;
+            failCount++;            
             finish = true;
             
 
         }
+    }
+    public boolean isfail() {
+        if (currentPuzzle == null) return false;
+        return currentPuzzle.isFailed();
     }
 
     public boolean isfinish() {

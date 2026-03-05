@@ -8,10 +8,11 @@ package project_puppet01;
  *
  * @author saran
  */
-import javax.swing.*;
+import java.awt.Image;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.Image;
+import javax.swing.*;
+import javax.sound.sampled.*;
 
 public class GamePanel extends JPanel {
 
@@ -42,6 +43,9 @@ public class GamePanel extends JPanel {
     //private int failCount = 0;
     //private int successCount = 0;
     //private int requiredSuccess;
+
+    private String MenuSound, PuppetboxSound, TitleSound, EndgameSound;
+    private static Clip currentSound;
 
     private Image backgroundImage, MenuImage, TitleImage1, TitleImage2, TitleImage3,
             Boxopen, Jumpscare, WhiteImage, LoseImage, WinImage, FinalImage, OpenImage;
@@ -78,17 +82,22 @@ public class GamePanel extends JPanel {
                 getClass().getResource("/Image/White.png")).getImage();
         OpenImage = new ImageIcon(
                 getClass().getResource("/Image/opengame.png")).getImage();
+        MenuSound = "/Sound/menusound.wav";
+        PuppetboxSound = "/Sound/puppetsound.wav";
+        TitleSound = "/Sound/titlesound.wav";
+        EndgameSound = "/Sound/endsound.wav";
         openTimer = new Timer(50, e -> {
             fade += 0.01f;
             if (fade >= 1f) {
                 fade = 0f;
                 gameState = GameState.MENU;
+                playsound(MenuSound, true);
                 openTimer.stop();
             }
             repaint();
         });
         openTimer.start();
-        breakTimer = new Timer(3000, e -> {
+        breakTimer = new Timer(5000, e -> {
             Break = false;
             puppetBox.sethold(false);
             gameState = GameState.PUZZLE;
@@ -114,15 +123,20 @@ public class GamePanel extends JPanel {
                     puzzleController.update();
                     puppetBox.sethold(false);
                     if (puzzleController.isWin()) {
+                        stopsound();
                         playing = false;
                         if (currentNight == MAX_NIGHT) {
                             Gamesuccess();
                         } else {
                             gameState = GameState.WINSCREEN;
                         }
-                    } else if (puzzleController.isLose()) {
-                        playing = false;
-                        gameState = GameState.LOSESCREEN;
+                    } else if (puzzleController.isfail()) {
+                        puppetBox.decrease(20);
+                        if (puzzleController.isLose()) {
+                            stopsound();
+                            playing = false;
+                            Gameover();
+                        }
                     } else {
                         puzzleController.nextPuzzle();
                         startBreak();
@@ -149,16 +163,23 @@ public class GamePanel extends JPanel {
             public void mousePressed(MouseEvent e) {
                 if (gameState == GameState.MENU) {
                     if (newGameButton.contains(e.getPoint())) {
+                        stopsound();
                         puppetBox.setValue(50);
                         startNewGame();
+                        playsound(TitleSound, false);
                     } else if (continueButton.contains(e.getPoint())) {
+                        stopsound();
                         Difficulty();
                         gameState = GameState.TITLE;
+                        playsound(TitleSound, false);
                         puppetBox.setValue(50);
                         titleTimer.start();
                     }
                 } else if (gameState == GameState.PREPARE) {
                     if (isOnButton(e.getX(), e.getY())) {
+                        if (!playing) {
+                            playsound(PuppetboxSound, true);
+                        }
                         playing = true;
                         puppetBox.sethold(true);
                         holdTimer.start();
@@ -170,10 +191,12 @@ public class GamePanel extends JPanel {
                 } else if (gameState == GameState.WINSCREEN) {
                     if (menuButton.contains(e.getPoint())) {
                         gameState = GameState.MENU;
+                        playsound(MenuSound, true);
                     } else if (nextButton.contains(e.getPoint())) {
                         currentNight++;
                         Difficulty();
                         gameState = GameState.TITLE;
+                        playsound(TitleSound, false);
                         puppetBox.setValue(50);
                         titleTimer.start();
                     }
@@ -181,11 +204,13 @@ public class GamePanel extends JPanel {
                 } else if (gameState == GameState.FINALSCREEN) {
                     if (menuButton.contains(e.getPoint())) {
                         gameState = GameState.MENU;
+                        playsound(MenuSound, true);
                     }
 
                 } else if (gameState == GameState.LOSESCREEN) {
                     if (menuButton.contains(e.getPoint())) {
                         gameState = GameState.MENU;
+                        playsound(MenuSound, true);
                     }
 
                 }
@@ -405,6 +430,7 @@ public class GamePanel extends JPanel {
                 Timer jumpTimer = new Timer(5000, null);
                 jumpTimer.setRepeats(false);
                 jumpTimer.addActionListener(J -> {
+                    playsound(EndgameSound, false);
                     gameState = GameState.LOSESCREEN;
                     repaint();
                 });
@@ -421,9 +447,32 @@ public class GamePanel extends JPanel {
         Timer WhiteTimer = new Timer(4000, null);
         WhiteTimer.setRepeats(false);
         WhiteTimer.addActionListener(W -> {
+            playsound(EndgameSound, false);
             gameState = GameState.FINALSCREEN;
             repaint();
         });
         WhiteTimer.start();
+    }
+
+    public static void playsound(String sound, boolean loop) {
+        try {
+            AudioInputStream audio = AudioSystem.getAudioInputStream(
+                    GamePanel.class.getResource(sound));
+            currentSound = AudioSystem.getClip();
+            currentSound.open(audio);
+            if (loop) {
+                currentSound.loop(Clip.LOOP_CONTINUOUSLY);
+            } else {
+                currentSound.start();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void stopsound() {
+        if (currentSound != null && currentSound.isRunning()) {
+            currentSound.stop();
+        }
     }
 }
