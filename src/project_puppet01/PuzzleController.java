@@ -39,20 +39,13 @@ public class PuzzleController {
     }
 
     private void RandomPuzzle() {
-    if (puzzleIndex >= puzzles.size()) {
-        Collections.shuffle(puzzles);
-        puzzleIndex = 0;
-    }
-
-    currentPuzzle = puzzles.get(puzzleIndex);
-    puzzleIndex++;
-}
-
-    public void update() {
-        if (currentPuzzle == null) {
-            return;
+        if (puzzleIndex >= puzzles.size()) {
+            Collections.shuffle(puzzles);
+            puzzleIndex = 0;
         }
-        currentPuzzle.update();
+
+        currentPuzzle = puzzles.get(puzzleIndex);
+        puzzleIndex++;
     }
 
     public void draw(Graphics g) {
@@ -68,19 +61,20 @@ public class PuzzleController {
         if (currentPuzzle.issuccess()) {
             successCount++;
             finish = true;
-            
 
         }
 
         if (currentPuzzle.isFailed()) {
-            failCount++;            
+            failCount++;
             finish = true;
-            
 
         }
     }
+
     public boolean isfail() {
-        if (currentPuzzle == null) return false;
+        if (currentPuzzle == null) {
+            return false;
+        }
         return currentPuzzle.isFailed();
     }
 
@@ -92,6 +86,7 @@ public class PuzzleController {
         return false;
 
     }
+
     public void nextPuzzle() {
         RandomPuzzle();
     }

@@ -79,7 +79,7 @@ public class GamePanel extends JPanel {
         FinalImage = new ImageIcon(
                 getClass().getResource("/Image/win.png")).getImage();
         WhiteImage = new ImageIcon(
-                getClass().getResource("/Image/White.png")).getImage();
+                getClass().getResource("/Image/white.png")).getImage();
         OpenImage = new ImageIcon(
                 getClass().getResource("/Image/opengame.png")).getImage();
         MenuSound = "/Sound/menusound.wav";
@@ -120,7 +120,6 @@ public class GamePanel extends JPanel {
             }
             if (gameState == GameState.PUZZLE && puzzleController != null) {
                 if (puzzleController.isfinish()) {
-                    puzzleController.update();
                     puppetBox.sethold(false);
                     if (puzzleController.isWin()) {
                         stopsound();
