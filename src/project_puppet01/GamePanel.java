@@ -8,11 +8,10 @@ package project_puppet01;
  *
  * @author saran
  */
-import java.awt.Image;
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
 import javax.sound.sampled.*;
+import javax.swing.*;
 
 public class GamePanel extends JPanel {
 
