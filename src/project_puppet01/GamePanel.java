@@ -136,7 +136,10 @@ public class GamePanel extends JPanel {
                             stopsound();
                             playing = false;
                             Gameover();
-                        }
+                        } else {
+                            puzzleController.nextPuzzle();
+                            startBreak();
+                        }                        
                     } else {
                         puzzleController.nextPuzzle();
                         startBreak();
