@@ -41,10 +41,10 @@ public class QuestionPuzzle extends Puzzle {
         }
 
         
-        g.setColor(java.awt.Color.RED);
+        /*g.setColor(java.awt.Color.RED);
         for(int i = 0; i < 4; i++) {
             g.drawRect(hitboxes[i].x, hitboxes[i].y, hitboxes[i].width, hitboxes[i].height);
-        }
+        }*/
         
     }
 
