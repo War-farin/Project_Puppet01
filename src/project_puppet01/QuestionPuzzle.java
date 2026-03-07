@@ -64,8 +64,4 @@ public class QuestionPuzzle extends Puzzle {
             }
         }
     }
-
-    @Override
-    public void update() {
-    }
 }

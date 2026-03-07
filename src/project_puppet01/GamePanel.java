@@ -120,7 +120,6 @@ public class GamePanel extends JPanel {
             }
             if (gameState == GameState.PUZZLE && puzzleController != null) {
                 if (puzzleController.isfinish()) {
-                    puzzleController.update();
                     puppetBox.sethold(false);
                     if (puzzleController.isWin()) {
                         stopsound();

@@ -15,8 +15,6 @@ public abstract class Puzzle {
     protected boolean success = false;
     protected boolean failed = false;
 
-    public abstract void update();
-
     public abstract void draw(Graphics g);
 
     public abstract void Click(int x, int y);
