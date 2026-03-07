@@ -48,7 +48,7 @@ public class GamePanel extends JPanel {
 
     private Image backgroundImage, MenuImage, TitleImage1, TitleImage2, TitleImage3,
             Boxopen, Jumpscare, WhiteImage, LoseImage, WinImage, FinalImage, OpenImage;
-
+    private Image[] questionImages = new Image[15];
     private Rectangle newGameButton;
     private Rectangle continueButton;
     private Rectangle menuButton;
@@ -81,6 +81,7 @@ public class GamePanel extends JPanel {
                 getClass().getResource("/Image/white.png")).getImage();
         OpenImage = new ImageIcon(
                 getClass().getResource("/Image/opengame.png")).getImage();
+        loadResources(); 
         MenuSound = "/Sound/menusound.wav";
         PuppetboxSound = "/Sound/puppetsound.wav";
         TitleSound = "/Sound/titlesound.wav";
@@ -119,6 +120,7 @@ public class GamePanel extends JPanel {
             }
             if (gameState == GameState.PUZZLE && puzzleController != null) {
                 if (puzzleController.isfinish()) {
+                    puzzleController.update();
                     puppetBox.sethold(false);
                     if (puzzleController.isWin()) {
                         stopsound();
@@ -238,7 +240,7 @@ public class GamePanel extends JPanel {
     }
 
     private void Difficulty() {
-        puzzleController = new PuzzleController(2 + currentNight);
+        puzzleController = new PuzzleController(2 + currentNight, questionImages);
     }
 
     @Override
@@ -473,4 +475,21 @@ public class GamePanel extends JPanel {
             currentSound.stop();
         }
     }
+    
+
+    private void loadResources() {
+        try {
+            for (int i = 0; i < 15; i++) {
+                String path = "/Image/qna" + (i + 1) + ".png"; 
+                java.net.URL imgURL = getClass().getResource(path);
+                if (imgURL != null) {
+                    questionImages[i] = new javax.swing.ImageIcon(imgURL).getImage();
+                } else {
+                    System.err.println("Could not find file: " + path);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+}
 }

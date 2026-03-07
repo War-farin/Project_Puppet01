@@ -23,29 +23,44 @@ public class PuzzleController {
     private int maxFail = 3;
     private boolean finish = false;
 
-    public PuzzleController(int requiredSuccess) {
+    public PuzzleController(int requiredSuccess, Image[] loadedImages) {
         this.requiredSuccess = requiredSuccess;
-        addPuzzles();
+        addPuzzles(loadedImages);
         RandomPuzzle();
     }
 
-    private void addPuzzles() {
-        puzzles.add(new ClickCirclePuzzle());
-        puzzles.add(new ClickCirclePuzzle());
-        puzzles.add(new ClickCirclePuzzle());
-        puzzles.add(new ClickCirclePuzzle());
-        puzzles.add(new ClickCirclePuzzle());
+    private void addPuzzles(Image[] imgs) {
+        puzzles.clear(); 
 
+        int[] answers = {3, 2, 1, 3, 2, 2, 4, 3, 1, 1, 3, 4, 4, 4, 1}; 
+
+        for (int i = 0; i < 15; i++) {
+            if (imgs[i] != null) {
+                puzzles.add(new QuestionPuzzle(imgs[i], answers[i]));
+            }
+        }
+        
+        java.util.Collections.shuffle(puzzles);
+    
+        puzzleIndex = 0;
+        currentPuzzle = (Puzzle)puzzles.get(puzzleIndex);
     }
 
     private void RandomPuzzle() {
-        if (puzzleIndex >= puzzles.size()) {
-            Collections.shuffle(puzzles);
-            puzzleIndex = 0;
-        }
+    if (puzzleIndex >= puzzles.size()) {
+        Collections.shuffle(puzzles);
+        puzzleIndex = 0;
+    }
 
-        currentPuzzle = puzzles.get(puzzleIndex);
-        puzzleIndex++;
+    currentPuzzle = puzzles.get(puzzleIndex);
+    puzzleIndex++;
+}
+
+    public void update() {
+        if (currentPuzzle == null) {
+            return;
+        }
+        currentPuzzle.update();
     }
 
     public void draw(Graphics g) {
@@ -61,20 +76,19 @@ public class PuzzleController {
         if (currentPuzzle.issuccess()) {
             successCount++;
             finish = true;
+            
 
         }
 
         if (currentPuzzle.isFailed()) {
-            failCount++;
+            failCount++;            
             finish = true;
+            
 
         }
     }
-
     public boolean isfail() {
-        if (currentPuzzle == null) {
-            return false;
-        }
+        if (currentPuzzle == null) return false;
         return currentPuzzle.isFailed();
     }
 
@@ -86,7 +100,6 @@ public class PuzzleController {
         return false;
 
     }
-
     public void nextPuzzle() {
         RandomPuzzle();
     }
